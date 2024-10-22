@@ -1,60 +1,68 @@
 import React, { useState } from 'react';
-
-const photos = [
-  'https://via.placeholder.com/600x400?text=Photo+1',
-  'https://via.placeholder.com/600x400?text=Photo+2',
-  'https://via.placeholder.com/600x400?text=Photo+3',
-  'https://via.placeholder.com/600x400?text=Photo+4',
-];
+import 'react-image-lightbox/style.css';
+import Lightbox from 'react-image-lightbox';
 
 const PhotoViewer = () => {
+  const [images, setImages] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const nextPhoto = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files);
+    const imageUrls = files.map(file => URL.createObjectURL(file));
+    setImages(imageUrls);
   };
 
-  const prevPhoto = () => {
-    setCurrentIndex((prevIndex) =>
-      (prevIndex - 1 + photos.length) % photos.length
-    );
+  const openLightbox = (index) => {
+    setCurrentIndex(index);
+    setIsOpen(true);
   };
 
-  const [image, setImage] = useState(null);
+  const closeLightbox = () => {
+    setIsOpen(false);
+  };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const goToPrevious = () => {
+    setCurrentIndex((currentIndex + images.length - 1) % images.length);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((currentIndex + 1) % images.length);
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      
-      <img
-      
-        src={image}
-        alt={`${[image]}`}
-        style={{ width: '600px', height: '400px', objectFit: 'cover' }}
-
+    <div>
+      <input 
+        type="file" 
+        accept="image/*" 
+        multiple 
+        onChange={handleFileChange} 
       />
-      <input type='file' multiple accept='image/*' onChange={handleImageChange} />
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={prevPhoto} disabled={currentIndex === 0}>
-          Previous
-        </button>
-        <button onClick={nextPhoto} disabled={currentIndex === photos.length - 1}>
-          Next
-        </button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '20px' }}>
+        {images.map((image, index) => (
+          <div key={index} style={{ margin: '10px' }}>
+            <img 
+              src={image} 
+              alt={`Uploaded ${index}`} 
+              style={{ width: '150px', height: '150px', objectFit: 'cover', cursor: 'pointer' }} 
+              onClick={() => openLightbox(index)}
+            />
+          </div>
+        ))}
       </div>
+
+      {isOpen && (
+        <Lightbox
+          mainSrc={images[currentIndex]}
+          nextSrc={images[(currentIndex + 1) % images.length]}
+          prevSrc={images[(currentIndex + images.length - 1) % images.length]}
+          onCloseRequest={closeLightbox}
+          onMovePrevRequest={goToPrevious}
+          onMoveNextRequest={goToNext}
+        />
+      )}
     </div>
   );
 };
 
 export default PhotoViewer;
-
