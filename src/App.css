@@ -13,6 +13,7 @@
   align-items: end;
   justify-content: center;
   font-size: calc(10px + 2vmin);
+  color: white;
 }
 
 h1 {
